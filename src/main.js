@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import "./style.css";
+import { courseDays } from "./course.js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -7,20 +8,11 @@ const configured = Boolean(SUPABASE_URL && SUPABASE_KEY && !SUPABASE_URL.include
 const supabase = configured ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
 const app = document.querySelector("#app");
 
-const modules = [
-  ["01","Fundamentos","Operações, números naturais, inteiros, racionais e ordem de operações."],
-  ["02","Frações e porcentagem","Frações, números decimais, aumentos, descontos e porcentagens sucessivas."],
-  ["03","Razão e proporção","Escalas, regra de três simples e composta, grandezas proporcionais."],
-  ["04","Matemática financeira","Juros simples e compostos, descontos, taxas e planejamento."],
-  ["05","Álgebra e funções","Expressões, equações, sistemas, função afim, quadrática e exponencial."],
-  ["06","Geometria plana","Ângulos, polígonos, perímetro, áreas, semelhança e Pitágoras."],
-  ["07","Geometria espacial","Prismas, cilindros, cones, pirâmides, esferas, áreas e volumes."],
-  ["08","Estatística e probabilidade","Média, mediana, moda, gráficos, tabelas e eventos."],
-  ["09","Grandezas e unidades","Conversões, unidades, velocidade, densidade e escalas."],
-  ["10","Trigonometria e geometria analítica","Razões trigonométricas, plano cartesiano e distância entre pontos."],
-  ["11","Contagem e sequências","Princípio fundamental da contagem, PA e PG."],
-  ["12","Revisão estratégica","Leitura de questões, estimativa, interpretação e revisão geral."]
-];
+const modules = courseDays.map((day, i) => [
+  String(i + 1).padStart(2, "0"),
+  day.title,
+  day.goal
+]);
 
 const questions = [
  {q:"Uma camiseta custa R$ 80,00 e recebe desconto de 25%. Qual é o preço final?",a:["R$ 55,00","R$ 60,00","R$ 65,00","R$ 70,00","R$ 75,00"],c:1,e:"25% de 80 = 0,25 × 80 = 20. Então, 80 − 20 = R$ 60,00."},
@@ -142,23 +134,33 @@ function showLesson(i) {
   "Equação é uma igualdade com incógnita. Faça a mesma operação nos dois lados. Na função afim f(x)=ax+b, a indica a inclinação.",
   "Retângulo: A=b×h. Triângulo: A=(b×h)/2. Círculo: A=πr². Perímetro é a soma dos lados.",
   "Prisma: V=área da base×altura. Cilindro: V=πr²h. Sempre confira as unidades de medida.",
-  "Média = soma dos valores ÷ quantidade. Mediana é o valor central dos dados ordenados. Moda é o valor mais frequente.",
-  "Converta unidades antes de calcular. Em velocidade média, v=distância/tempo. Confira se as unidades são compatíveis.",
-  "No triângulo retângulo: sen=oposto/hipotenusa, cos=adjacente/hipotenusa e tg=oposto/adjacente.",
-  "Princípio fundamental: multiplique as possibilidades de etapas independentes. PA tem diferença constante; PG tem razão constante.",
-  "Leia o comando, destaque os dados, estime a ordem de grandeza e elimine alternativas incompatíveis antes de calcular."
- ][i];
- target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos módulos</button><div class="lesson-detail"><div class="eyebrow">MÓDULO ${m[0]}</div><h2>${m[1]}</h2><p>${m[2]}</p><div class="lesson-note"><h3>Resumo para estudar</h3><p>${lessonText}</p></div><div class="example-box"><b>Exemplo rápido</b><p>Calcule 15% de 200.</p><p>15% = 0,15. Então, 0,15 × 200 = <strong>30</strong>.</p></div><button class="btn btn-primary" id="try-quiz">Praticar questões →</button><p class="hint">Material introdutório. Revise as fórmulas e pratique para consolidar o aprendizado.</p></div>`;
- document.querySelector("#back-lessons").onclick=showLessons;document.querySelector("#try-quiz").onclick=showQuiz;
-}
-function showQuiz() {
- const target=document.querySelector("#member-content");if(!target)return;
- let index=0,answers=[],locked=false;
- const draw=()=>{
-  const q=questions[index];
-  target.innerHTML=`<div class="member-section-head"><div><div class="eyebrow">SIMULADO NOTAUP</div><h2>Matemática na prática</h2></div><span class="muted">Questão ${index+1} de ${questions.length}</span></div><div class="quiz-card"><div class="quiz-progress"><span style="width:${(index/questions.length)*100}%"></span></div><div class="eyebrow">QUESTÃO ${index+1}</div><h3>${q.q}</h3><div class="answer-list">${q.a.map((a,i)=>`<button class="answer" data-answer="${i}"><span>${"ABCDE"[i]}</span>${a}</button>`).join("")}</div><div id="explanation"></div><button class="btn btn-primary" id="next-question" disabled>${index===questions.length-1?"Finalizar simulado":"Próxima questão →"}</button></div>`;
-  target.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{
-   if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;
+  "Média = soma dos valores ÷ quantidade. Mediana é o valor central dos dadosfunction showLesson(i) {
+ const day = courseDays[i], target=document.querySelector("#member-content");
+ if(!target || !day)return;
+ const videoLinks = day.videos.map(v=>`<a class="resource-link" href="${v.url}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.note)}</span><small>Assistir no YouTube ↗</small></a>`).join("");
+ const topics = day.topics.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
+ const lessons = day.lessons.map((p,j)=>`<section class="course-topic"><h3>${j+1}. ${escapeHtml(p.heading)}</h3><p>${escapeHtml(p.text)}</p>${p.formula?`<div class="formula-box"><b>Guarde:</b> ${escapeHtml(p.formula)}</div>`:""}${p.example?`<div class="example-box"><b>Exemplo resolvido</b><p>${escapeHtml(p.example)}</p></div>`:""}</section>`).join("");
+ const exercises = day.exercises.map((q,j)=>`<article class="course-exercise" data-exercise="${j}"><b>Questão ${j+1}</b><p>${escapeHtml(q.q)}</p><div class="answer-list">${q.options.map((a,k)=>`<button class="answer" data-course-answer="${j}-${k}"><span>${"ABCDE"[k]}</span>${escapeHtml(a)}</button>`).join("")}</div><div class="course-feedback" id="course-feedback-${j}"></div></article>`).join("");
+ target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button>
+ <div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p>
+ <div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div>
+ <h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul>
+ <h3>Aula explicada</h3>${lessons}
+ <h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div>
+ <h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}
+ <div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div>
+ <button class="btn btn-primary" id="back-lessons-bottom">Concluir revisão do dia</button></div>`;
+ document.querySelector("#back-lessons").onclick=showLessons;
+ document.querySelector("#back-lessons-bottom").onclick=showLessons;
+ target.querySelectorAll("[data-course-answer]").forEach(button=>button.onclick=()=>{
+   const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number), q=day.exercises[qi];
+   const card=target.querySelector(`[data-exercise="${qi}"]`);
+   if(card.dataset.answered)return;
+   card.dataset.answered="1";
+   card.querySelectorAll("[data-course-answer]").forEach(b=>{b.disabled=true;const [,option]=b.dataset.courseAnswer.split("-").map(Number);if(option===q.answer)b.classList.add("correct");if(option===ai&&ai!==q.answer)b.classList.add("wrong");});
+   card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
+ });
+}sen;
    target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.c)el.classList.add("correct");if(i===chosen&&i!==q.c)el.classList.add("wrong");});
    target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.c?"Muito bem!":"Vamos entender:"}</b><p>${q.e}</p></div>`;
    target.querySelector("#next-question").disabled=false;
