@@ -10,7 +10,28 @@ export default async (event) => {
     const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id").eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
 
-    if (order.status === "pending" && transaction_nsu && slug) {
+    const token = header(event, "authorization").replace(/^Bearer\\s+/i, "");
+    let authenticatedUser = null;
+    if (token) {
+      const { data: { user }, error: authError } = await admin.auth.getUser(token);
+      if (authError || !user) return json(401, { error: "Sessão inválida." });
+      authenticatedUser = user;
+    }
+
+    if (order.is_test === true && order.status === "pending" && authenticatedUser) {
+      const allowedEmail = (process.env.TEST_ALLOWED_EMAIL || "").trim().toLowerCase();
+      if (!allowedEmail || authenticatedUser.email?.toLowerCase() !== allowedEmail) {
+        return json(403, { error: "Este pedido de teste não está autorizado para esta conta." });
+      }
+      const { error: testUpdateError } = await admin.from("orders").update({
+        status: "paid", customer_email: authenticatedUser.email, paid_at: new Date().toISOString()
+      }).eq("id", order.id).eq("status", "pending").eq("is_test", true);
+      if (testUpdateError) throw testUpdateError;
+      order.status = "paid";
+      order.customer_email = authenticatedUser.email;
+    }
+
+    if (order.status === "pending" && transaction_nsu && slug && order.is_test !== true) {
       const headers = { "Content-Type": "application/json" };
       if (process.env.INFINITEPAY_API_KEY) headers["X-Api-Key"] = process.env.INFINITEPAY_API_KEY;
       const checked = await fetch("https://api.checkout.infinitepay.io/payment_check", {
@@ -25,22 +46,18 @@ export default async (event) => {
       }
     }
 
-    const token = header(event, "authorization").replace(/^Bearer\\s+/i, "");
     let hasAccess = false;
-    if (token) {
-      const { data: { user }, error: authError } = await admin.auth.getUser(token);
-      if (authError || !user) return json(401, { error: "Sessão inválida." });
-      if (order.status === "paid") {
-        if (order.user_id && order.user_id !== user.id) return json(409, { error: "Pedido já associado a outra conta." });
-        if (!order.user_id) {
-          const { data: linkedOrder, error: linkError } = await admin.from("orders").update({ user_id: user.id, customer_email: user.email }).eq("id", order.id).is("user_id", null).select("id").maybeSingle();
-          if (linkError) throw linkError;
-          if (!linkedOrder) return json(409, { error: "Este pedido já foi associado a outra conta." });
-        }
-        const { error: enrollmentError } = await admin.from("enrollments").upsert({ user_id: user.id, product_code: "notaup-matematica-enem", access_type: "lifetime", active: true }, { onConflict: "user_id" });
-        if (enrollmentError) throw enrollmentError;
-        hasAccess = true;
+    if (authenticatedUser && order.status === "paid") {
+      const user = authenticatedUser;
+      if (order.user_id && order.user_id !== user.id) return json(409, { error: "Pedido já associado a outra conta." });
+      if (!order.user_id) {
+        const { data: linkedOrder, error: linkError } = await admin.from("orders").update({ user_id: user.id, customer_email: user.email }).eq("id", order.id).is("user_id", null).select("id").maybeSingle();
+        if (linkError) throw linkError;
+        if (!linkedOrder) return json(409, { error: "Este pedido já foi associado a outra conta." });
       }
+      const { error: enrollmentError } = await admin.from("enrollments").upsert({ user_id: user.id, product_code: "notaup-matematica-enem", access_type: "lifetime", active: true }, { onConflict: "user_id" });
+      if (enrollmentError) throw enrollmentError;
+      hasAccess = true;
     }
     return json(200, { status: order.status, paid: order.status === "paid", hasAccess, email: order.customer_email, paidAt: order.paid_at });
   } catch (error) {
