@@ -42,11 +42,11 @@ function renderHome() {
   activeView="home";
   shell(`<main>
     <section class="hero"><div class="hero-copy"><div class="eyebrow"><span></span> INTENSIVO DE MATEMÁTICA ENEM</div><h1>Matemática sem medo. <em>Mais confiança</em> na prova.</h1><p>Do básico ao avançado, com explicações diretas, exemplos resolvidos e simulados para você praticar no seu ritmo.</p><div class="hero-actions"><a class="btn btn-yellow" href="#comprar">Quero começar agora <span>→</span></a><a class="link-btn" href="#conteudo">Ver o conteúdo</a></div><div class="trust"><span>✓ Acesso vitalício</span><span>✓ Estude no seu ritmo</span><span>✓ Simulados online</span></div></div><div class="hero-art"><div class="math-card card-top"><small>DESAFIO DO DIA</small><strong>25% de 200</strong><span>Você consegue?</span></div><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="big-seven">7<span>dias de foco</span></div><div class="math-card card-bottom"><b>✓</b><span>Aprender • Praticar • Evoluir</span></div></div></section>
-    <section class="stats"><div><strong>12</strong><span>módulos de estudo</span></div><div><strong>Do zero</strong><span>ao conteúdo avançado</span></div><div><strong>100%</strong><span>online e no seu ritmo</span></div></section>
+    <section class="stats"><div><strong>7</strong><span>dias de estudo guiado</span></div><div><strong>Do básico</strong><span>à revisão estratégica</span></div><div><strong>35</strong><span>questões com correção</span></div></section>
     <section class="section" id="conteudo"><div class="section-heading"><div class="eyebrow">TRILHA DE APRENDIZADO</div><h2>O que você vai estudar</h2><p>Uma trilha organizada para construir a base e avançar nos principais assuntos de matemática cobrados no ENEM.</p></div><div class="module-grid">${modules.map(m=>`<article class="module"><span class="module-num">${m[0]}</span><h3>${m[1]}</h3><p>${m[2]}</p></article>`).join("")}</div></section>
     <section class="split-section" id="como-funciona"><div><div class="eyebrow">SEU ESTUDO, SEU RITMO</div><h2>Aprenda. Resolva. Entenda onde melhorar.</h2><p>Assista às aulas, leia os materiais e teste o que aprendeu com simulados interativos. Seu progresso fica salvo na sua conta.</p><ul class="check-list"><li>Conteúdo dividido por assunto</li><li>Questões de múltipla escolha</li><li>Correção e explicação após responder</li><li>Histórico de tentativas</li></ul></div><div class="progress-card"><div class="progress-head"><span>Minha evolução</span><span class="live-dot">● AO SEU RITMO</span></div><div class="progress-circle"><strong>7</strong><span>dias de foco</span></div><div class="progress-line"><span style="width:72%"></span></div><div class="progress-foot"><span>Estude um pouco todos os dias</span><b>72%</b></div></div></section>
-    <section class="pricing" id="comprar"><div class="pricing-inner"><div class="eyebrow">COMECE HOJE</div><h2>Seu próximo passo começa com uma questão.</h2><p>Tenha acesso à trilha de matemática e à área de simulados da NotaUp.</p><div class="price"><small>Pagamento único</small><strong>R$ 19,90</strong><span>Sem mensalidade • Acesso vitalício</span></div><button class="btn btn-yellow btn-wide" id="buy">Garantir meu acesso <span>→</span></button><small class="secure">🔒 Pagamento processado pela InfinitePay</small><p class="fine-print">Acesso liberado após confirmação do pagamento. Material digital independente, sem vínculo oficial com o INEP.</p></div></section>
-    <section class="section faq" id="duvidas"><div class="section-heading"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de começar</h2></div><details><summary>O acesso é vitalício?</summary><p>Sim. Após a confirmação do pagamento, o acesso ao produto adquirido fica associado à sua conta.</p></details><details><summary>Preciso estudar em horário fixo?</summary><p>Não. Você pode acessar os conteúdos quando quiser, usando celular ou computador.</p></details><details><summary>O material é oficial do ENEM?</summary><p>Não. A NotaUp é uma iniciativa independente de preparação. As atividades autorais são inspiradas no formato de questões do ENEM.</p></details><details><summary>Como recebo o acesso?</summary><p>Você paga primeiro e, após a confirmação, cria sua conta com nome, e-mail e senha.</p></details></section>
+    <section class="pricing" id="comprar"><div class="pricing-inner"><div class="eyebrow">COMECE HOJE</div><h2>Seu próximo passo começa com uma questão.</h2><p>Tenha acesso à trilha de matemática e à área de simulados da NotaUp.</p><div class="price"><small>Pagamento único</small><strong>R$ 19,90</strong><span>Sem mensalidade • Acesso vitalício</span></div><button class="btn btn-yellow btn-wide" id="buy">Garantir meu acesso <span>→</span></button><small class="secure">🔒 Pagamento processado pela InfinitePay</small><p class="fine-print">Acesso vitalício após a confirmação do pagamento. Conteúdo independente; videoaulas de terceiros permanecem hospedadas no YouTube.</p></div></section>
+    <section class="section faq" id="duvidas"><div class="section-heading"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de começar</h2></div><details><summary>O acesso é vitalício?</summary><p>Sim. Após a confirmação do pagamento, o acesso ao produto adquirido fica associado à sua conta.</p></details><details><summary>Preciso estudar em horário fixo?</summary><p>Não. Você pode acessar os conteúdos quando quiser, usando celular ou computador.</p></details><details><summary>O material é oficial do ENEM?</summary><p>Não. A NotaUp é uma iniciativa independente de preparação. As atividades autorais são inspiradas no formato de questões do ENEM.</p></details><details><summary>Como recebo o acesso?</summary><p>Após pagar, você retorna à NotaUp, cria sua conta com o mesmo e-mail informado no checkout e aguarda a confirmação automática da InfinitePay. Se já tiver conta, basta entrar.</p></details><details><summary>As videoaulas são da NotaUp?</summary><p>As videoaulas são conteúdos públicos de professores e canais independentes no YouTube. A NotaUp organiza os links junto com resumos e exercícios autorais; os vídeos continuam sujeitos às regras e disponibilidade do YouTube.</p></details><details><summary>O que está incluído nos R$ 19,90?</summary><p>Acesso vitalício à trilha intensiva de sete dias, explicações escritas, exemplos, exercícios e simulados disponíveis na plataforma.</p></details><details><summary>Consigo estudar pelo celular?</summary><p>Sim, a plataforma pode ser acessada pelo navegador do celular ou computador com conexão à internet.</p></details></section>
   </main>`);
   document.querySelector("#buy")?.addEventListener("click", startCheckout);
   document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{const el=document.querySelector(a.getAttribute("href"));if(el){e.preventDefault();el.scrollIntoView({behavior:"smooth"});}}));
@@ -125,52 +125,42 @@ function showLessons() {
  target.querySelectorAll("[data-lesson]").forEach(b=>b.onclick=()=>showLesson(Number(b.dataset.lesson)));
 }
 function showLesson(i) {
- const m=modules[i], target=document.querySelector("#member-content");
- const lessonText = [
-  "Comece identificando os números naturais, inteiros, racionais e reais. Respeite a ordem das operações: parênteses, potências, multiplicações/divisões e adições/subtrações.",
-  "Uma fração representa uma divisão. Para calcular p% de um valor, transforme p em decimal dividindo por 100 e multiplique pelo valor.",
-  "Em grandezas diretamente proporcionais, as duas crescem juntas. Na regra de três, organize as grandezas e compare as razões.",
-  "Juros simples: J = C × i × t. Montante: M = C + J. Em juros compostos: M = C(1+i)^t.",
-  "Equação é uma igualdade com incógnita. Faça a mesma operação nos dois lados. Na função afim f(x)=ax+b, a indica a inclinação.",
-  "Retângulo: A=b×h. Triângulo: A=(b×h)/2. Círculo: A=πr². Perímetro é a soma dos lados.",
-  "Prisma: V=área da base×altura. Cilindro: V=πr²h. Sempre confira as unidades de medida.",
-  "Média = soma dos valores ÷ quantidade. Mediana é o valor central dos dadosfunction showLesson(i) {
- const day = courseDays[i], target=document.querySelector("#member-content");
- if(!target || !day)return;
- const videoLinks = day.videos.map(v=>`<a class="resource-link" href="${v.url}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.note)}</span><small>Assistir no YouTube ↗</small></a>`).join("");
- const topics = day.topics.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
- const lessons = day.lessons.map((p,j)=>`<section class="course-topic"><h3>${j+1}. ${escapeHtml(p.heading)}</h3><p>${escapeHtml(p.text)}</p>${p.formula?`<div class="formula-box"><b>Guarde:</b> ${escapeHtml(p.formula)}</div>`:""}${p.example?`<div class="example-box"><b>Exemplo resolvido</b><p>${escapeHtml(p.example)}</p></div>`:""}</section>`).join("");
- const exercises = day.exercises.map((q,j)=>`<article class="course-exercise" data-exercise="${j}"><b>Questão ${j+1}</b><p>${escapeHtml(q.q)}</p><div class="answer-list">${q.options.map((a,k)=>`<button class="answer" data-course-answer="${j}-${k}"><span>${"ABCDE"[k]}</span>${escapeHtml(a)}</button>`).join("")}</div><div class="course-feedback" id="course-feedback-${j}"></div></article>`).join("");
- target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button>
- <div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p>
- <div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div>
- <h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul>
- <h3>Aula explicada</h3>${lessons}
- <h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div>
- <h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}
- <div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div>
- <button class="btn btn-primary" id="back-lessons-bottom">Concluir revisão do dia</button></div>`;
+ const day=courseDays[i], target=document.querySelector("#member-content");
+ if(!target||!day)return;
+ const videoLinks=day.videos.map(v=>`<a class="resource-link" href="${v.url}" target="_blank" rel="noopener noreferrer"><b>${escapeHtml(v.title)}</b><span>${escapeHtml(v.note)}</span><small>Assistir no YouTube ↗</small></a>`).join("");
+ const topics=day.topics.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
+ const lessons=day.lessons.map((p,j)=>`<section class="course-topic"><h3>${j+1}. ${escapeHtml(p.heading)}</h3><p>${escapeHtml(p.text)}</p>${p.formula?`<div class="formula-box"><b>Guarde:</b> ${escapeHtml(p.formula)}</div>`:""}${p.example?`<div class="example-box"><b>Exemplo resolvido</b><p>${escapeHtml(p.example)}</p></div>`:""}</section>`).join("");
+ const exercises=day.exercises.map((q,j)=>`<article class="course-exercise" data-exercise="${j}"><b>Questão ${j+1}</b><p>${escapeHtml(q.q)}</p><div class="answer-list">${q.options.map((a,k)=>`<button class="answer" data-course-answer="${j}-${k}"><span>${"ABCDE"[k]}</span>${escapeHtml(a)}</button>`).join("")}</div><div class="course-feedback" id="course-feedback-${j}"></div></article>`).join("");
+ target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button><div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p><div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div><h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul><h3>Aula explicada</h3>${lessons}<h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div><h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}<div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div><button class="btn btn-primary" id="back-lessons-bottom">Voltar à trilha</button></div>`;
  document.querySelector("#back-lessons").onclick=showLessons;
  document.querySelector("#back-lessons-bottom").onclick=showLessons;
  target.querySelectorAll("[data-course-answer]").forEach(button=>button.onclick=()=>{
-   const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number), q=day.exercises[qi];
-   const card=target.querySelector(`[data-exercise="${qi}"]`);
-   if(card.dataset.answered)return;
-   card.dataset.answered="1";
-   card.querySelectorAll("[data-course-answer]").forEach(b=>{b.disabled=true;const [,option]=b.dataset.courseAnswer.split("-").map(Number);if(option===q.answer)b.classList.add("correct");if(option===ai&&ai!==q.answer)b.classList.add("wrong");});
-   card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
+  const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number),q=day.exercises[qi],card=target.querySelector(`[data-exercise="${qi}"]`);
+  if(card.dataset.answered)return;
+  card.dataset.answered="1";
+  card.querySelectorAll("[data-course-answer]").forEach(b=>{const [,option]=b.dataset.courseAnswer.split("-").map(Number);b.disabled=true;if(option===q.answer)b.classList.add("correct");if(option===ai&&ai!==q.answer)b.classList.add("wrong");});
+  card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
  });
-}sen;
-   target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.c)el.classList.add("correct");if(i===chosen&&i!==q.c)el.classList.add("wrong");});
-   target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.c?"Muito bem!":"Vamos entender:"}</b><p>${q.e}</p></div>`;
+}
+function showQuiz() {
+ const target=document.querySelector("#member-content");if(!target)return;
+ const pool=courseDays.flatMap((day,di)=>day.exercises.map(q=>({...q,day:di+1})));
+ let index=0,answers=[],locked=false;
+ const draw=()=>{
+  const q=pool[index];
+  target.innerHTML=`<div class="member-section-head"><div><div class="eyebrow">SIMULADO NOTAUP</div><h2>Matemática na prática</h2></div><span class="muted">Questão ${index+1} de ${pool.length}</span></div><div class="quiz-card"><div class="quiz-progress"><span style="width:${(index/pool.length)*100}%"></span></div><div class="eyebrow">DIA ${q.day} • QUESTÃO ${index+1}</div><h3>${escapeHtml(q.q)}</h3><div class="answer-list">${q.options.map((a,i)=>`<button class="answer" data-answer="${i}"><span>${"ABCDE"[i]}</span>${escapeHtml(a)}</button>`).join("")}</div><div id="explanation"></div><button class="btn btn-primary" id="next-question" disabled>${index===pool.length-1?"Finalizar simulado":"Próxima questão →"}</button></div>`;
+  target.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{
+   if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;
+   target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.answer)el.classList.add("correct");if(i===chosen&&i!==q.answer)el.classList.add("wrong");});
+   target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.answer?"Muito bem!":"Vamos entender:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
    target.querySelector("#next-question").disabled=false;
   });
-  target.querySelector("#next-question").onclick=async()=>{if(index<questions.length-1){index++;locked=false;draw();}else await finishQuiz();};
+  target.querySelector("#next-question").onclick=()=>{if(index<pool.length-1){index++;locked=false;draw();}else finishQuiz();};
  };
  const finishQuiz=async()=>{
-  const score=answers.reduce((n,a,i)=>n+(a===questions[i].c?1:0),0);
-  if(supabase&&session) await supabase.from("quiz_attempts").insert({user_id:session.user.id,quiz_code:"diagnostico-matematica-01",score,total:questions.length,answers});
-  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${questions.length}</div><h2>${score>=4?"Ótimo trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${questions.length} questões.</p><button class="btn btn-primary" id="retry">Refazer simulado</button><button class="btn btn-light" id="to-lessons">Voltar aos módulos</button></div>`;
+  const score=answers.reduce((n,a,i)=>n+(a===pool[i].answer?1:0),0);
+  if(supabase&&session)await supabase.from("quiz_attempts").insert({user_id:session.user.id,quiz_code:"intensivo-7-dias",score,total:pool.length,answers});
+  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${pool.length}</div><h2>${score>=Math.ceil(pool.length*.8)?"Excelente trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${pool.length} questões.</p><button class="btn btn-primary" id="retry">Refazer simulado</button><button class="btn btn-light" id="to-lessons">Voltar aos módulos</button></div>`;
   document.querySelector("#retry").onclick=showQuiz;document.querySelector("#to-lessons").onclick=showLessons;
  };
  draw();
