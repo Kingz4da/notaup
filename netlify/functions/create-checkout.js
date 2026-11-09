@@ -35,7 +35,9 @@ export default async (event) => {
       return json(502, { error: result.message || "Não foi possível criar o checkout. Confira a configuração da InfinitePay." });
     }
     const checkoutUrl = result.url || result.checkout_url || result.link;
-    if (!checkoutUrl || !/^https:\/\/(checkout\.)?infinitepay\.io|^https:\/\/.*infinitepay/i.test(checkoutUrl))
+    let checkoutHost = "";
+    try { checkoutHost = new URL(checkoutUrl).hostname.toLowerCase(); } catch {}
+    if (!checkoutUrl || !checkoutUrl.startsWith("https://") || !(checkoutHost === "infinitepay.io" || checkoutHost.endsWith(".infinitepay.io")))
       throw new Error("A InfinitePay não retornou uma URL de checkout reconhecida.");
     await admin.from("orders").update({ checkout_url: checkoutUrl }).eq("order_nsu", orderNsu);
     return json(200, { checkoutUrl, orderNsu });
