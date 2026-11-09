@@ -144,4 +144,30 @@ export const courseDays = [
  ],
  homework:"Faça um simulado misto com tempo marcado. Revise apenas os erros e durma bem antes da prova."
 }
+,
+{
+ title:"Simulado final e plano para a prova",
+ goal:"Consolidar os seis dias anteriores, treinar ritmo de resolução e identificar os assuntos que ainda precisam de atenção.",
+ plan:"Faça o simulado sem consultar o material, corrija com calma e use o resultado para escolher sua última revisão.",
+ topics:["Revisão de porcentagem e proporção","Revisão de gráficos e funções","Revisão de geometria e medidas","Revisão de estatística e probabilidade","Controle de tempo e estratégia"],
+ lessons:[
+  {heading:"Revisão ativa",text:"Feche o material e tente explicar cada fórmula com suas próprias palavras. Depois resolva uma questão sem olhar o exemplo. Se não conseguir, volte somente ao tópico necessário.",formula:"Lembrar sem consultar + praticar + corrigir",example:"Explique por que 20% de 150 é 30 e depois resolva 15% de 240 sem olhar a conta anterior."},
+  {heading:"Como escolher questões",text:"Comece pelas questões em que você reconhece o assunto e consegue organizar os dados. Não confunda questão longa com questão difícil: muitas podem ser resolvidas com proporção, leitura de gráfico ou estimativa.",formula:"Priorize questões que você consegue encaminhar com segurança",example:"Se uma questão de gráfico pede apenas a maior categoria, compare as barras antes de fazer contas."},
+  {heading:"Correção inteligente",text:"Ao errar, classifique o motivo: não sabia o conceito, interpretou errado, errou a conta ou esqueceu a unidade. Corrija a causa, não apenas a alternativa.",formula:"Erro → causa → revisão curta → nova questão",example:"Se marcou 0,25 como 25, revise conversão decimal/porcentagem e faça duas questões semelhantes."},
+  {heading:"No dia da prova",text:"Leve documentos e materiais exigidos no edital, chegue com antecedência e siga as orientações oficiais. Distribua o tempo, hidrate-se e não fique preso a uma questão. Confira se a resposta atende exatamente ao que foi pedido.",formula:"Calma, leitura atenta, unidade correta e gestão do tempo",example:"Antes de marcar, confira se a questão pede valor total, diferença, porcentagem ou taxa."}
+ ],
+ videos:[
+  {title:"Questões de Matemática do ENEM — Professor Ferretto",note:"Treino final com resolução comentada",url:"https://www.youtube.com/results?search_query=Professor+Ferretto+quest%C3%B5es+matem%C3%A1tica+ENEM+resolvidas"},
+  {title:"Questões anteriores e gabaritos — INEP",note:"Pratique com provas oficiais",url:"https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos"}
+ ],
+ exercises:[
+  {q:"Um produto de R$ 240 recebe desconto de 15%. Qual o valor pago?",options:["R$ 196","R$ 200","R$ 204","R$ 210","R$ 216"],answer:2,explanation:"15% de 240 = 36. Valor final = 240 − 36 = R$ 204."},
+  {q:"A média de 6, 8 e 10 é:",options:["6","7","8","9","10"],answer:2,explanation:"(6+8+10)÷3 = 24÷3 = 8."},
+  {q:"Uma caixa mede 2 cm × 3 cm × 4 cm. Seu volume é:",options:["9 cm³","12 cm³","18 cm³","24 cm³","36 cm³"],answer:3,explanation:"Volume = 2×3×4 = 24 cm³."},
+  {q:"Em uma turma de 80 alunos, 20% faltaram. Quantos compareceram?",options:["16","48","60","64","68"],answer:3,explanation:"20% de 80 = 16 faltaram. Compareceram 80−16=64."},
+  {q:"Uma viagem de 180 km foi feita em 3 horas. Qual a velocidade média?",options:["45 km/h","50 km/h","60 km/h","70 km/h","90 km/h"],answer:2,explanation:"Velocidade média = 180÷3 = 60 km/h."}
+ ],
+ homework:"Revise seu caderno de erros. Não tente aprender muitos assuntos novos na véspera: consolide o que já estudou e descanse."
+}
+
 ];
