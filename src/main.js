@@ -178,7 +178,8 @@ function showQuiz(selectedId = null) {
   target.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{
    if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;
    target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.answer)el.classList.add("correct");if(i===chosen&&i!==q.answer)el.classList.add("wrong");});
-   target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.answer?"Muito bem!":"Vamos entender:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
+   target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.answer?"Muito bem!":"Vamos entender:"}</b><p>${escapeHtml(q.explanation)}</p><button class="btn btn-light btn-small" id="retry-one">↻ Refazer esta questão</button></div>`;
+   target.querySelector("#retry-one").onclick=()=>{answers[index]=undefined;locked=false;draw();};
    target.querySelector("#next-question").disabled=false;
   });
   target.querySelector("#next-question").onclick=()=>{if(index<pool.length-1){index++;locked=false;draw();}else finishQuiz();};
@@ -186,7 +187,7 @@ function showQuiz(selectedId = null) {
  const finishQuiz=async()=>{
   const score=answers.reduce((n,a,i)=>n+(a===pool[i].answer?1:0),0);
   if(supabase&&session)await supabase.from("quiz_attempts").insert({user_id:session.user.id,quiz_code:selected.id,score,total:pool.length,answers});
-  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${pool.length}</div><h2>${score>=Math.ceil(pool.length*.8)?"Excelente trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${pool.length} questões.</p><button class="btn btn-primary" id="retry">Refazer simulado</button><button class="btn btn-light" id="to-exams">Ver outros simulados</button></div>`;
+  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${pool.length}</div><h2>${score>=Math.ceil(pool.length*.8)?"Excelente trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${pool.length} questões.</p><button class="btn btn-primary" id="retry">↻ Refazer todas as questões</button><button class="btn btn-light" id="to-exams">Ver outros simulados</button></div>`;
   document.querySelector("#retry").onclick=()=>showQuiz(selected.id);document.querySelector("#to-exams").onclick=()=>showQuiz();
  };
  draw();
