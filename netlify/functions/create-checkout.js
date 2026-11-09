@@ -37,7 +37,7 @@ export default async (event) => {
     const checkoutUrl = result.url || result.checkout_url || result.link;
     let checkoutHost = "";
     try { checkoutHost = new URL(checkoutUrl).hostname.toLowerCase(); } catch {}
-    if (!checkoutUrl || !checkoutUrl.startsWith("https://") || !(checkoutHost === "infinitepay.io" || checkoutHost.endsWith(".infinitepay.io")))
+    if (!checkoutUrl || !checkoutUrl.startsWith("https://") || !(checkoutHost === "checkout.infinitepay.com.br" || checkoutHost === "infinitepay.io" || checkoutHost.endsWith(".infinitepay.io")))
       throw new Error("A InfinitePay não retornou uma URL de checkout reconhecida.");
     await admin.from("orders").update({ checkout_url: checkoutUrl }).eq("order_nsu", orderNsu);
     return json(200, { checkoutUrl, orderNsu });
