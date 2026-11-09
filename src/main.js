@@ -92,7 +92,7 @@ async function startCheckout() {
   const email=window.prompt("Qual e-mail você vai usar para criar sua conta depois do pagamento?");
   if(!email)return;
   const customerEmail=email.trim().toLowerCase();
-  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail)){alert("Digite um e-mail válido.");return;}
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert("Digite um e-mail válido.");return;}
   const button=document.querySelector("#buy");if(button){button.disabled=true;button.textContent="Preparando checkout...";}
   try{
     const res=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:customerEmail})});
