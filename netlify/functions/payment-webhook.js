@@ -11,12 +11,6 @@ export default async (event) => {
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const { data: order, error } = await admin.from("orders").select("*").eq("order_nsu", orderNsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
-    if (payload.event === "refunded" || payload.event === "canceled") {
-      await admin.from("orders").update({ status: payload.event }).eq("id", order.id);
-      if (payload.event === "refunded" && order.user_id)
-        await admin.from("enrollments").update({ active: false }).eq("user_id", order.user_id);
-      return json(200, { received: true });
-    }
     if (!transactionNsu || !invoiceSlug) return json(200, { received: true, verified: false });
     const headers = { "Content-Type": "application/json" };
     if (process.env.INFINITEPAY_API_KEY) headers["X-Api-Key"] = process.env.INFINITEPAY_API_KEY;
