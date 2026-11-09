@@ -12,7 +12,7 @@ export default async (event) => {
       .eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
 
-    const token = (event.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    const token = (event.headers.authorization || "").replace(/^Bearer\s+/i, "");
     let hasAccess = false;
     if (token) {
       const { data: { user }, error: authError } = await admin.auth.getUser(token);
