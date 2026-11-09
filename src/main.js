@@ -34,7 +34,7 @@ function money(v) { return new Intl.NumberFormat("pt-BR",{style:"currency",curre
 function studentStoreKey(){return session?.user?.id?`notaup_study_${session.user.id}`:null;}
 function readStudyData(){try{return JSON.parse(localStorage.getItem(studentStoreKey())||'{"completedDays":[],"wrong":[],"answered":[]}');}catch{return {completedDays:[],wrong:[],answered:[]};}}
 function writeStudyData(data){const key=studentStoreKey();if(key)localStorage.setItem(key,JSON.stringify(data));}
-function markAnswered(day,question,chosen,correct,explanation,options,questionText){const data=readStudyData();const id=day+":"+question;data.answered=data.answered.filter(x=>x.id!==id);data.answered.push({id,day,question,chosen,correct,explanation,options,q:questionText});if(chosen!==correct){data.wrong=data.wrong.filter(x=>x.id!==id);data.wrong.push({id,day,question,chosen,correct,explanation,options});}else{data.wrong=data.wrong.filter(x=>x.id!==id);}writeStudyData(data);}
+function markAnswered(day,question,chosen,correct,explanation,options,questionText){const data=readStudyData();const id=day+":"+question;data.answered=data.answered.filter(x=>x.id!==id);data.answered.push({id,day,question,chosen,correct,explanation,options,q:questionText});if(chosen!==correct){data.wrong=data.wrong.filter(x=>x.id!==id);data.wrong.push({id,day,question,chosen,correct,explanation,options,q:questionText});}else{data.wrong=data.wrong.filter(x=>x.id!==id);}writeStudyData(data);}
 function markDayComplete(day){const data=readStudyData();if(!data.completedDays.includes(day))data.completedDays.push(day);writeStudyData(data);}
 function showFormulas(){
  const target=document.querySelector("#member-content");if(!target)return;
@@ -192,7 +192,7 @@ function showLesson(i) {
  document.querySelector("#back-lessons").onclick=showLessons;
  document.querySelector("#back-lessons-bottom").onclick=showLessons;
  target.querySelector("#complete-day").onclick=()=>{markDayComplete(i);renderStudentProgress();alert("Dia marcado como concluído!");};
- target.querySelector("#complete-day").onclick=()=>{markDayComplete(i);renderStudentProgress();alert("Dia marcado como concluído!");};
+
  target.querySelectorAll("[data-course-answer]").forEach(button=>button.onclick=()=>{
   const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number),q=day.exercises[qi],card=target.querySelector(`[data-exercise="${qi}"]`);
   if(card.dataset.answered)return;
