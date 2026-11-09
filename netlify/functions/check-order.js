@@ -7,7 +7,7 @@ export default async (event) => {
     const { order_nsu, transaction_nsu, slug } = await body(event);
     if (!order_nsu || !/^NU-[0-9a-f-]{36}$/i.test(order_nsu)) return json(400, { error: "Pedido inválido." });
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-    const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id").eq("order_nsu", order_nsu).maybeSingle();
+    const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id,is_test").eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
 
     const token = header(event, "authorization").replace(/^Bearer\\s+/i, "");
