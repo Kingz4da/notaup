@@ -81,3 +81,7 @@ for each row execute procedure public.handle_new_user();
 -- Execute também no SQL Editor do Supabase se o schema antigo já foi aplicado.
 alter table public.orders alter column user_id drop not null;
 alter table public.orders add column if not exists customer_email text;
+
+
+-- MODO DE TESTE RESTRITO (não representa pagamento real)
+alter table public.orders add column if not exists is_test boolean not null default false;
