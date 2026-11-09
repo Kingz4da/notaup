@@ -60,16 +60,16 @@ function renderHome() {
   document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{const el=document.querySelector(a.getAttribute("href"));if(el){e.preventDefault();el.scrollIntoView({behavior:"smooth"});}}));
 }
 
-function showAuth() {
+function showAuth(signupInitially = false) {
   const overlay=document.createElement("div"); overlay.className="modal-backdrop";
   overlay.innerHTML=`<div class="modal"><button class="modal-close" aria-label="Fechar">×</button><div class="eyebrow">ÁREA DO ALUNO</div><h2 id="auth-title">Entre na sua conta</h2><p id="auth-desc">Acesse seus estudos e acompanhe seu progresso.</p><form id="auth-form"><label>Nome completo <input id="auth-name" placeholder="Seu nome" autocomplete="name"></label><label>E-mail <input id="auth-email" type="email" required placeholder="voce@email.com" autocomplete="email"></label><label>Senha <input id="auth-password" type="password" required minlength="6" placeholder="Mínimo de 6 caracteres" autocomplete="current-password"></label><button class="btn btn-primary btn-wide" id="auth-submit">Entrar</button></form><button class="switch-auth" id="switch-auth">Não tem conta? Criar cadastro</button><p class="form-message" id="auth-message"></p></div>`;
   document.body.append(overlay);
-  let signup=false;
+  let signup=signupInitially;
   const title=overlay.querySelector("#auth-title"), desc=overlay.querySelector("#auth-desc"), name=overlay.querySelector("#auth-name"), submit=overlay.querySelector("#auth-submit"), sw=overlay.querySelector("#switch-auth"), form=overlay.querySelector("#auth-form"), msg=overlay.querySelector("#auth-message");
   const close=()=>overlay.remove();
   overlay.querySelector(".modal-close").onclick=close; overlay.onclick=e=>{if(e.target===overlay)close();};
   sw.onclick=()=>{signup=!signup;title.textContent=signup?"Crie sua conta":"Entre na sua conta";desc.textContent=signup?"Cadastre-se para acessar a NotaUp.":"Acesse seus estudos e acompanhe seu progresso.";name.style.display=signup?"block":"none";name.required=signup;submit.textContent=signup?"Criar conta":"Entrar";sw.textContent=signup?"Já tem conta? Entrar":"Não tem conta? Criar cadastro";msg.textContent="";};
-  name.style.display="none";
+  name.style.display=signup?"block":"none";\n  name.required=signup;\n  if(signup){title.textContent="Crie sua conta";desc.textContent="Finalize seu cadastro para acessar a NotaUp.";submit.textContent="Criar conta";sw.textContent="Já tem conta? Entrar";}\n  const pendingEmail=localStorage.getItem("notaup_pending_email");\n  if(pendingEmail) overlay.querySelector("#auth-email").value=pendingEmail;
   form.onsubmit=async e=>{e.preventDefault();if(!supabase){msg.textContent="Configure as variáveis do Supabase para ativar o login.";return;}
     submit.disabled=true;msg.textContent="Aguarde...";
     const email=overlay.querySelector("#auth-email").value.trim(), password=overlay.querySelector("#auth-password").value;
@@ -77,7 +77,7 @@ function showAuth() {
     submit.disabled=false;
     if(result.error){msg.textContent=result.error.message;return;}
     if(signup && !result.data.session){msg.textContent="Cadastro criado! Confira seu e-mail para confirmar a conta e depois entre.";return;}
-    session=result.data.session;await refreshAccess();close();renderDashboard();
+    session=result.data.session;await claimPendingOrder();await refreshAccess();close();renderDashboard();
   };
 }
 
@@ -89,14 +89,30 @@ async function refreshAccess() {
 
 async function startCheckout() {
   if(!configured){alert("Antes de vender, configure Supabase e as variáveis de ambiente da Netlify.");return;}
-  if(!session){showAuth();alert("Crie sua conta ou entre primeiro. Depois clique em Garantir meu acesso.");return;}
-  const button=document.querySelector("#buy");button.disabled=true;button.textContent="Preparando checkout...";
+  const email=window.prompt("Qual e-mail você vai usar para criar sua conta depois do pagamento?");
+  if(!email)return;
+  const customerEmail=email.trim().toLowerCase();
+  if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail)){alert("Digite um e-mail válido.");return;}
+  const button=document.querySelector("#buy");if(button){button.disabled=true;button.textContent="Preparando checkout...";}
   try{
-    const {data:{session:current}}=await supabase.auth.getSession();
-    const res=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({})});
+    const res=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:customerEmail})});
     const body=await res.json();if(!res.ok)throw new Error(body.error||"Não foi possível iniciar o pagamento.");
+    localStorage.setItem("notaup_pending_order",body.orderNsu);
+    localStorage.setItem("notaup_pending_email",customerEmail);
     location.href=body.checkoutUrl;
-  }catch(e){alert(e.message);button.disabled=false;button.innerHTML='Garantir meu acesso <span>→</span>';}
+  }catch(e){alert(e.message);if(button){button.disabled=false;button.innerHTML='Garantir meu acesso <span>→</span>';}}
+}
+
+async function claimPendingOrder(){
+  const orderNsu=localStorage.getItem("notaup_pending_order");
+  if(!orderNsu||!session||!supabase)return false;
+  const {data:{session:current}}=await supabase.auth.getSession();
+  const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({order_nsu:orderNsu})});
+  const body=await res.json();
+  if(!res.ok){if(body.error)alert(body.error);return false;}
+  if(body.status!=="paid"){alert("Ainda estamos aguardando a confirmação do pagamento. Assim que a InfinitePay confirmar, entre novamente para liberar o curso.");return false;}
+  if(body.hasAccess){localStorage.removeItem("notaup_pending_order");localStorage.removeItem("notaup_pending_email");return true;}
+  return false;
 }
 
 async function renderDashboard() {
@@ -175,7 +191,17 @@ async function init(){
  renderHome();
  const params=new URLSearchParams(location.search);
  if(params.get("pagamento")==="retorno" && params.get("order_nsu")){
-   setTimeout(async()=>{if(session){await renderDashboard();alert("Estamos verificando a confirmação do pagamento. Se acabou de pagar, aguarde alguns instantes e atualize a área do aluno.");}else{alert("Pagamento retornado. Entre com a mesma conta usada na compra para conferir seu acesso.");}},300);
+   const orderNsu=params.get("order_nsu");
+   localStorage.setItem("notaup_pending_order",orderNsu);
+   setTimeout(async()=>{
+     const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_nsu:orderNsu})});
+     const order=await res.json().catch(()=>({}));
+     if(order.email)localStorage.setItem("notaup_pending_email",order.email);
+     if(session){await claimPendingOrder();await renderDashboard();}
+     else showAuth(true);
+     if(order.status!=="paid")alert("Seu pedido está aguardando a confirmação da InfinitePay. Assim que o pagamento for confirmado, entre com o mesmo e-mail para liberar o curso.");
+     history.replaceState({}, "", "/");
+   },300);
  }
 }
 init();
