@@ -34,7 +34,7 @@ function money(v) { return new Intl.NumberFormat("pt-BR",{style:"currency",curre
 function studentStoreKey(){return session?.user?.id?`notaup_study_${session.user.id}`:null;}
 function readStudyData(){try{return JSON.parse(localStorage.getItem(studentStoreKey())||'{"completedDays":[],"wrong":[],"answered":[]}');}catch{return {completedDays:[],wrong:[],answered:[]};}}
 function writeStudyData(data){const key=studentStoreKey();if(key)localStorage.setItem(key,JSON.stringify(data));}
-function markAnswered(day,question,chosen,correct,explanation,options){const data=readStudyData();const id=day+":"+question;data.answered=data.answered.filter(x=>x.id!==id);data.answered.push({id,day,question,chosen,correct,explanation,options});if(chosen!==correct){data.wrong=data.wrong.filter(x=>x.id!==id);data.wrong.push({id,day,question,chosen,correct,explanation,options});}else{data.wrong=data.wrong.filter(x=>x.id!==id);}writeStudyData(data);}
+function markAnswered(day,question,chosen,correct,explanation,options,questionText){const data=readStudyData();const id=day+":"+question;data.answered=data.answered.filter(x=>x.id!==id);data.answered.push({id,day,question,chosen,correct,explanation,options,q:questionText});if(chosen!==correct){data.wrong=data.wrong.filter(x=>x.id!==id);data.wrong.push({id,day,question,chosen,correct,explanation,options});}else{data.wrong=data.wrong.filter(x=>x.id!==id);}writeStudyData(data);}
 function markDayComplete(day){const data=readStudyData();if(!data.completedDays.includes(day))data.completedDays.push(day);writeStudyData(data);}
 function showFormulas(){
  const target=document.querySelector("#member-content");if(!target)return;
@@ -188,16 +188,17 @@ function showLesson(i) {
  const topics=day.topics.map(t=>`<li>${escapeHtml(t)}</li>`).join("");
  const lessons=day.lessons.map((p,j)=>`<section class="course-topic"><h3>${j+1}. ${escapeHtml(p.heading)}</h3><p>${escapeHtml(p.text)}</p>${p.formula?`<div class="formula-box"><b>Guarde:</b> ${escapeHtml(p.formula)}</div>`:""}${p.example?`<div class="example-box"><b>Exemplo resolvido</b><p>${escapeHtml(p.example)}</p></div>`:""}</section>`).join("");
  const exercises=day.exercises.map((q,j)=>`<article class="course-exercise" data-exercise="${j}"><b>Questão ${j+1}</b><p>${escapeHtml(q.q)}</p><div class="answer-list">${q.options.map((a,k)=>`<button class="answer" data-course-answer="${j}-${k}"><span>${"ABCDE"[k]}</span>${escapeHtml(a)}</button>`).join("")}</div><div class="course-feedback" id="course-feedback-${j}"></div></article>`).join("");
- target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button><div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p><div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div><h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul><h3>Aula explicada</h3>${lessons}<h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div><h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}<div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div><button class="btn btn-primary" id="back-lessons-bottom">Voltar à trilha</button></div>`;
+ target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button><div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p><div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div><h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul><h3>Aula explicada</h3>${lessons}<h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div><h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}<div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div><button class="btn btn-primary" id="complete-day">✓ Marcar dia como concluído</button><button class="btn btn-light" id="back-lessons-bottom">Voltar à trilha</button></div>`;
  document.querySelector("#back-lessons").onclick=showLessons;
  document.querySelector("#back-lessons-bottom").onclick=showLessons;
+ target.querySelector("#complete-day").onclick=()=>{markDayComplete(i);renderStudentProgress();alert("Dia marcado como concluído!");};
  target.querySelector("#complete-day").onclick=()=>{markDayComplete(i);renderStudentProgress();alert("Dia marcado como concluído!");};
  target.querySelectorAll("[data-course-answer]").forEach(button=>button.onclick=()=>{
   const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number),q=day.exercises[qi],card=target.querySelector(`[data-exercise="${qi}"]`);
   if(card.dataset.answered)return;
   card.dataset.answered="1";
   card.querySelectorAll("[data-course-answer]").forEach(b=>{const [,option]=b.dataset.courseAnswer.split("-").map(Number);b.disabled=true;if(option===q.answer)b.classList.add("correct");if(option===ai&&ai!==q.answer)b.classList.add("wrong");});
-  markAnswered(i,qi,ai,q.answer,q.explanation,q.options);card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
+  markAnswered(i,qi,ai,q.answer,q.explanation,q.options,q.q);card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
  });
 }
 function showQuiz(selectedId = null) {
@@ -223,7 +224,7 @@ function showQuiz(selectedId = null) {
   target.innerHTML=`<button class="back-link" id="back-exams">← Voltar aos simulados</button><div class="member-section-head"><div><div class="eyebrow">SIMULADO NOTAUP</div><h2>${escapeHtml(selected.title)}</h2></div><span class="muted">Questão ${index+1} de ${pool.length}</span></div><div class="quiz-card"><div class="quiz-progress"><span style="width:${(index/pool.length)*100}%"></span></div><div class="eyebrow">QUESTÃO ${index+1}</div><h3>${escapeHtml(q.q)}</h3><div class="answer-list">${q.options.map((a,i)=>`<button class="answer" data-answer="${i}"><span>${"ABCDE"[i]}</span>${escapeHtml(a)}</button>`).join("")}</div><div id="explanation"></div><button class="btn btn-primary" id="next-question" disabled>${index===pool.length-1?"Finalizar simulado":"Próxima questão →"}</button></div>`;
   target.querySelector("#back-exams").onclick=()=>showQuiz();
   target.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{
-   if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;
+   if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;markAnswered("simulado-"+selected.id,index,chosen,q.answer,q.explanation,q.options,q.q);
    target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.answer)el.classList.add("correct");if(i===chosen&&i!==q.answer)el.classList.add("wrong");});
    target.querySelector("#explanation").innerHTML=`<div class="explanation"><b>${chosen===q.answer?"Muito bem!":"Vamos entender:"}</b><p>${escapeHtml(q.explanation)}</p><button class="btn btn-light btn-small" id="retry-one">↻ Refazer esta questão</button></div>`;
    target.querySelector("#retry-one").onclick=()=>{answers[index]=undefined;locked=false;draw();};
