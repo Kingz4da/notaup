@@ -111,7 +111,7 @@ async function claimPendingOrder(){
   const orderNsu=localStorage.getItem("notaup_pending_order");
   if(!orderNsu||!session||!supabase)return false;
   const {data:{session:current}}=await supabase.auth.getSession();
-  const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({order_nsu:orderNsu})});
+  const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({order_nsu:orderNsu,transaction_nsu:params.get("transaction_nsu"),slug:params.get("slug")})});
   const body=await res.json();
   if(!res.ok){if(body.error)alert(body.error);return false;}
   if(body.status!=="paid"){alert("Ainda estamos aguardando a confirmação do pagamento. Assim que a InfinitePay confirmar, entre novamente para liberar o curso.");return false;}
