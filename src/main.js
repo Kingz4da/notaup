@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import "./style.css";
 import { courseDays } from "./course.js";
+import { simulados } from "./simulados.js";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
@@ -152,13 +153,28 @@ function showLesson(i) {
   card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
  });
 }
-function showQuiz() {
+function showQuiz(selectedId = null) {
  const target=document.querySelector("#member-content");if(!target)return;
- const pool=courseDays.flatMap((day,di)=>day.exercises.map(q=>({...q,day:di+1})));
+ const official=[
+  {year:"2024",url:"https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos/2024"},
+  {year:"2023",url:"https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos/2023"},
+  {year:"2022",url:"https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos/2022"},
+  {year:"2021",url:"https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos/2021"}
+ ];
+ const custom=simulados.map(s=>({id:s.id,title:s.title,description:s.description,questions:s.questions}));
+ const all=[{id:"trilha-35",title:"Simulado geral — 35 questões",description:"Questões de revisão dos sete módulos da NotaUp.",questions:courseDays.flatMap((day,di)=>day.exercises.map(q=>({...q,day:di+1})))},...custom];
+ if(!selectedId){
+  target.innerHTML=`<div class="member-section-head"><div><div class="eyebrow">TREINO PARA O ENEM</div><h2>Escolha seu simulado</h2></div><span class="muted">Correção comentada</span></div><div class="mock-exam-grid">${all.map(s=>`<article class="mock-exam-card"><div class="eyebrow">${s.questions.length} QUESTÕES</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.description)}</p><button class="btn btn-primary" data-start-exam="${s.id}">Começar simulado →</button></article>`).join("")}</div><section class="official-exams"><div class="eyebrow">PROVAS OFICIAIS</div><h2>Questões que já caíram no ENEM</h2><p>Abra os cadernos e gabaritos oficiais publicados pelo INEP. Selecione o segundo dia para encontrar Matemática e suas Tecnologias.</p><div class="official-links">${official.map(x=>`<a class="resource-link" href="${x.url}" target="_blank" rel="noopener noreferrer"><b>ENEM ${x.year} — provas e gabaritos</b><small>Consultar no portal oficial do INEP ↗</small></a>`).join("")}<a class="resource-link" href="https://www.gov.br/inep/pt-br/areas-de-atuacao/avaliacao-e-exames-educacionais/enem/provas-e-gabaritos" target="_blank" rel="noopener noreferrer"><b>Ver todos os anos disponíveis</b><small>Arquivo oficial do INEP ↗</small></a></div><p class="exam-note">Os dois simulados NotaUp são autorais e inspirados no estilo contextualizado do ENEM. As provas anteriores são disponibilizadas pelo INEP nos links oficiais; não são reproduzidas integralmente nesta plataforma.</p></section>`;
+  target.querySelectorAll("[data-start-exam]").forEach(b=>b.onclick=()=>showQuiz(b.dataset.startExam));
+  return;
+ }
+ const selected=all.find(s=>s.id===selectedId);if(!selected){showQuiz();return;}
+ const pool=selected.questions;
  let index=0,answers=[],locked=false;
  const draw=()=>{
   const q=pool[index];
-  target.innerHTML=`<div class="member-section-head"><div><div class="eyebrow">SIMULADO NOTAUP</div><h2>Matemática na prática</h2></div><span class="muted">Questão ${index+1} de ${pool.length}</span></div><div class="quiz-card"><div class="quiz-progress"><span style="width:${(index/pool.length)*100}%"></span></div><div class="eyebrow">DIA ${q.day} • QUESTÃO ${index+1}</div><h3>${escapeHtml(q.q)}</h3><div class="answer-list">${q.options.map((a,i)=>`<button class="answer" data-answer="${i}"><span>${"ABCDE"[i]}</span>${escapeHtml(a)}</button>`).join("")}</div><div id="explanation"></div><button class="btn btn-primary" id="next-question" disabled>${index===pool.length-1?"Finalizar simulado":"Próxima questão →"}</button></div>`;
+  target.innerHTML=`<button class="back-link" id="back-exams">← Voltar aos simulados</button><div class="member-section-head"><div><div class="eyebrow">SIMULADO NOTAUP</div><h2>${escapeHtml(selected.title)}</h2></div><span class="muted">Questão ${index+1} de ${pool.length}</span></div><div class="quiz-card"><div class="quiz-progress"><span style="width:${(index/pool.length)*100}%"></span></div><div class="eyebrow">QUESTÃO ${index+1}</div><h3>${escapeHtml(q.q)}</h3><div class="answer-list">${q.options.map((a,i)=>`<button class="answer" data-answer="${i}"><span>${"ABCDE"[i]}</span>${escapeHtml(a)}</button>`).join("")}</div><div id="explanation"></div><button class="btn btn-primary" id="next-question" disabled>${index===pool.length-1?"Finalizar simulado":"Próxima questão →"}</button></div>`;
+  target.querySelector("#back-exams").onclick=()=>showQuiz();
   target.querySelectorAll("[data-answer]").forEach(b=>b.onclick=()=>{
    if(locked)return;locked=true;const chosen=Number(b.dataset.answer);answers[index]=chosen;
    target.querySelectorAll(".answer").forEach((el,i)=>{el.disabled=true;if(i===q.answer)el.classList.add("correct");if(i===chosen&&i!==q.answer)el.classList.add("wrong");});
@@ -169,9 +185,9 @@ function showQuiz() {
  };
  const finishQuiz=async()=>{
   const score=answers.reduce((n,a,i)=>n+(a===pool[i].answer?1:0),0);
-  if(supabase&&session)await supabase.from("quiz_attempts").insert({user_id:session.user.id,quiz_code:"intensivo-7-dias",score,total:pool.length,answers});
-  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${pool.length}</div><h2>${score>=Math.ceil(pool.length*.8)?"Excelente trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${pool.length} questões.</p><button class="btn btn-primary" id="retry">Refazer simulado</button><button class="btn btn-light" id="to-lessons">Voltar aos módulos</button></div>`;
-  document.querySelector("#retry").onclick=showQuiz;document.querySelector("#to-lessons").onclick=showLessons;
+  if(supabase&&session)await supabase.from("quiz_attempts").insert({user_id:session.user.id,quiz_code:selected.id,score,total:pool.length,answers});
+  target.innerHTML=`<div class="result-card"><div class="eyebrow">RESULTADO DO SIMULADO</div><div class="score">${score}/${pool.length}</div><h2>${score>=Math.ceil(pool.length*.8)?"Excelente trabalho!":"Continue praticando!"}</h2><p>Você acertou ${score} de ${pool.length} questões.</p><button class="btn btn-primary" id="retry">Refazer simulado</button><button class="btn btn-light" id="to-exams">Ver outros simulados</button></div>`;
+  document.querySelector("#retry").onclick=()=>showQuiz(selected.id);document.querySelector("#to-exams").onclick=()=>showQuiz();
  };
  draw();
 }
