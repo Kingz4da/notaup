@@ -1,11 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
-import { json, preflight } from "./_http.js";
+import { json, preflight, method } from "./_http.js";
 const PRICE_CENTS = 1990;
 const PRODUCT = "Intensivo NotaUp — Matemática ENEM";
 
 export default async (event) => {
   const pf = preflight(event); if (pf) return pf;
-  if (event.httpMethod !== "POST") return json(405, { error: "Método não permitido." });
+  if (method(event) !== "POST") return json(405, { error: "Método não permitido." });
   try {
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const orderNsu = `NU-${crypto.randomUUID()}`;
