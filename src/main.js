@@ -69,7 +69,11 @@ function showAuth(signupInitially = false) {
   const close=()=>overlay.remove();
   overlay.querySelector(".modal-close").onclick=close; overlay.onclick=e=>{if(e.target===overlay)close();};
   sw.onclick=()=>{signup=!signup;title.textContent=signup?"Crie sua conta":"Entre na sua conta";desc.textContent=signup?"Cadastre-se para acessar a NotaUp.":"Acesse seus estudos e acompanhe seu progresso.";name.style.display=signup?"block":"none";name.required=signup;submit.textContent=signup?"Criar conta":"Entrar";sw.textContent=signup?"Já tem conta? Entrar":"Não tem conta? Criar cadastro";msg.textContent="";};
-  name.style.display=signup?"block":"none";\n  name.required=signup;\n  if(signup){title.textContent="Crie sua conta";desc.textContent="Finalize seu cadastro para acessar a NotaUp.";submit.textContent="Criar conta";sw.textContent="Já tem conta? Entrar";}\n  const pendingEmail=localStorage.getItem("notaup_pending_email");\n  if(pendingEmail) overlay.querySelector("#auth-email").value=pendingEmail;
+  name.style.display=signup?"block":"none";
+  name.required=signup;
+  if(signup){title.textContent="Crie sua conta";desc.textContent="Finalize seu cadastro para acessar a NotaUp.";submit.textContent="Criar conta";sw.textContent="Já tem conta? Entrar";}
+  const pendingEmail=localStorage.getItem("notaup_pending_email");
+  if(pendingEmail) overlay.querySelector("#auth-email").value=pendingEmail;
   form.onsubmit=async e=>{e.preventDefault();if(!supabase){msg.textContent="Configure as variáveis do Supabase para ativar o login.";return;}
     submit.disabled=true;msg.textContent="Aguarde...";
     const email=overlay.querySelector("#auth-email").value.trim(), password=overlay.querySelector("#auth-password").value;
