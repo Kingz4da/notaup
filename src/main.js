@@ -30,6 +30,41 @@ let activeView = "home";
 function escapeHtml(s="") { return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function money(v) { return new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"}).format(v); }
 
+
+function studentStoreKey(){return session?.user?.id?`notaup_study_${session.user.id}`:null;}
+function readStudyData(){try{return JSON.parse(localStorage.getItem(studentStoreKey())||'{"completedDays":[],"wrong":[],"answered":[]}');}catch{return {completedDays:[],wrong:[],answered:[]};}}
+function writeStudyData(data){const key=studentStoreKey();if(key)localStorage.setItem(key,JSON.stringify(data));}
+function markAnswered(day,question,chosen,correct,explanation,options){const data=readStudyData();const id=day+":"+question;data.answered=data.answered.filter(x=>x.id!==id);data.answered.push({id,day,question,chosen,correct,explanation,options});if(chosen!==correct){data.wrong=data.wrong.filter(x=>x.id!==id);data.wrong.push({id,day,question,chosen,correct,explanation,options});}else{data.wrong=data.wrong.filter(x=>x.id!==id);}writeStudyData(data);}
+function markDayComplete(day){const data=readStudyData();if(!data.completedDays.includes(day))data.completedDays.push(day);writeStudyData(data);}
+function showFormulas(){
+ const target=document.querySelector("#member-content");if(!target)return;
+ const groups=[
+ ["Porcentagem",["p% de V = (p ÷ 100) × V","Aumento: valor inicial × (1 + taxa)","Desconto: valor inicial × (1 − taxa)"],"Exemplo: 20% de 150 = 0,20 × 150 = 30."],
+ ["Razão e proporção",["a/b = c/d","Regra de três: iguale as razões e multiplique cruzado"],"Exemplo: 3 cadernos custam R$ 18; 5 custam 18 × 5 ÷ 3 = R$ 30."],
+ ["Média e estatística",["Média = soma dos valores ÷ quantidade","Amplitude = maior valor − menor valor","Frequência relativa = frequência ÷ total"],"Exemplo: média de 4, 6 e 8 = 18 ÷ 3 = 6."],
+ ["Geometria plana",["Retângulo: A = base × altura","Triângulo: A = (base × altura) ÷ 2","Quadrado: A = lado²","Círculo: A = πr²","Perímetro: soma dos lados"],"Exemplo: retângulo 8 m × 5 m tem área de 40 m²."],
+ ["Geometria espacial",["Paralelepípedo: V = comprimento × largura × altura","Cubo: V = lado³","Cilindro: V = πr²h"],"Exemplo: caixa 2 × 3 × 4 cm tem volume de 24 cm³."],
+ ["Velocidade e unidades",["Velocidade média = distância ÷ tempo","Distância = velocidade × tempo","1 km = 1.000 m; 1 h = 60 min"],"Exemplo: 150 km em 3 h = 50 km/h."],
+ ["Probabilidade",["P(A) = casos favoráveis ÷ casos possíveis"],"Exemplo: 2 resultados favoráveis em 8 possíveis = 2/8 = 25%."],
+ ["Pitágoras e trigonometria",["a² = b² + c² (hipotenusa²)","sen = cateto oposto ÷ hipotenusa","cos = cateto adjacente ÷ hipotenusa","tg = cateto oposto ÷ cateto adjacente"],"Exemplo: catetos 3 e 4 formam hipotenusa 5."]
+ ];
+ target.innerHTML=`<button class="back-link" id="tools-back">← Voltar à área do aluno</button><div class="member-section-head"><div><div class="eyebrow">CONSULTA RÁPIDA</div><h2>Biblioteca de fórmulas</h2></div></div><div class="formula-library">${groups.map(g=>`<article class="formula-card"><h3>${g[0]}</h3><ul>${g[1].map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul><p>${g[2]}</p></article>`).join("")}</div>`;
+ target.querySelector("#tools-back").onclick=renderDashboard;
+}
+function showFlashcards(){
+ const target=document.querySelector("#member-content");if(!target)return;
+ const cards=[["Como calcular porcentagem?","Multiplique o valor pela taxa em forma decimal. Ex.: 15% = 0,15."],["Qual é a fórmula da média?","Some todos os valores e divida pela quantidade."],["Como calcular a área do retângulo?","Base × altura. A unidade fica ao quadrado."],["Como calcular velocidade média?","Distância percorrida dividida pelo tempo gasto."],["O que é mediana?","É o valor central dos dados depois de ordená-los."],["Como calcular probabilidade simples?","Casos favoráveis divididos pelo total de casos possíveis."],["Qual é o teorema de Pitágoras?","Em triângulo retângulo: hipotenusa² = cateto₁² + cateto₂²."],["Como converter minutos em horas?","Divida os minutos por 60. Ex.: 30 min = 0,5 h."]];
+ let index=0,flipped=false;
+ const draw=()=>{const c=cards[index];target.innerHTML=`<button class="back-link" id="flash-back">← Voltar à área do aluno</button><div class="member-section-head"><div><div class="eyebrow">REVISÃO ATIVA</div><h2>Flashcards de matemática</h2></div><span class="muted">${index+1} de ${cards.length}</span></div><button class="flashcard ${flipped?"flipped":""}" id="flash-card"><small>${flipped?"RESPOSTA":"PERGUNTA"} • TOQUE PARA VIRAR</small><strong>${escapeHtml(flipped?c[1]:c[0])}</strong></button><div class="flash-actions"><button class="btn btn-light" id="flash-prev" ${index===0?"disabled":""}>Anterior</button><button class="btn btn-primary" id="flash-next">${index===cards.length-1?"Recomeçar":"Próximo"}</button></div>`;target.querySelector("#flash-back").onclick=renderDashboard;target.querySelector("#flash-card").onclick=()=>{flipped=!flipped;draw();};target.querySelector("#flash-prev").onclick=()=>{index=Math.max(0,index-1);flipped=false;draw();};target.querySelector("#flash-next").onclick=()=>{index=index===cards.length-1?0:index+1;flipped=false;draw();};};
+ draw();
+}
+function showWrongAnswers(){
+ const target=document.querySelector("#member-content");if(!target)return;
+ const data=readStudyData();
+ target.innerHTML=`<button class="back-link" id="wrong-back">← Voltar à área do aluno</button><div class="member-section-head"><div><div class="eyebrow">REVISÃO PERSONALIZADA</div><h2>Meu caderno de erros</h2></div><span class="muted">${data.wrong.length} para revisar</span></div>${data.wrong.length?data.wrong.map((q,i)=>`<article class="course-exercise"><b>Dia ${q.day} • Questão ${q.question+1}</b><p>${escapeHtml(q.q||"Questão da trilha")}</p><p><b>Resposta correta:</b> ${"ABCDE"[q.correct]||"—"} — ${escapeHtml(q.options?.[q.correct]||"")}</p><div class="explanation"><p>${escapeHtml(q.explanation)}</p></div><button class="btn btn-light btn-small" data-remove-wrong="${i}">Marcar como revisada</button></article>`).join(""):`<div class="empty-state">Nenhum erro registrado ainda. Responda às questões dos módulos para montar seu caderno de revisão.</div>`}`;
+ target.querySelector("#wrong-back").onclick=renderDashboard;target.querySelectorAll("[data-remove-wrong]").forEach(b=>b.onclick=()=>{const d=readStudyData();d.wrong.splice(Number(b.dataset.removeWrong),1);writeStudyData(d);showWrongAnswers();});
+}
+
 function shell(content) {
   app.innerHTML = `<header class="nav"><a class="brand" id="brand-home" href="${session ? "#member-top" : "#inicio"}"><span class="brand-mark">N</span> NotaUp</a><nav>${session ? '<a href="#member-top" data-member-home>Início</a><a href="#member-content" data-member-content>Conteúdo</a><a href="#member-content" data-member-help>Dúvidas</a>' : '<a href="#conteudo">Conteúdo</a><a href="#como-funciona">Como funciona</a><a href="#duvidas">Dúvidas</a>'}</nav><div class="nav-actions">${session ? `<button class="btn btn-light" id="go-dashboard">Minha área</button><button class="text-btn" id="logout">Sair</button>` : `<button class="btn btn-light" id="open-login">Entrar</button><button class="btn btn-yellow" id="top-buy">Comprar agora · R$ 19,90</button>`}</div><button class="mobile-menu" id="mobile-menu">☰</button></header>${content}<footer><div class="brand"><span class="brand-mark">N</span> NotaUp</div><p>Preparação independente para o ENEM. A NotaUp não é afiliada ao INEP ou ao Ministério da Educação.</p><p><strong>Atendimento e cancelamento:</strong> <a href="https://wa.me/5534999245144?text=Ol%C3%A1%2C%20preciso%20de%20ajuda%20com%20a%20NotaUp." target="_blank" rel="noopener noreferrer">WhatsApp Business: +55 (34) 99924-5144</a></p><small>© ${new Date().getFullYear()} NotaUp. Todos os direitos reservados.</small></footer>`;
   document.querySelector("#brand-home")?.addEventListener("click",e=>{if(session){e.preventDefault();renderDashboard();window.scrollTo({top:0,behavior:"smooth"});}});
@@ -117,12 +152,23 @@ async function renderDashboard() {
     shell(`<main class="member-wrap"><div class="member-top" id="member-top"><div><div class="eyebrow">SUA CONTA NOTAUP</div><h1>Olá, ${escapeHtml(session.user.user_metadata?.full_name||session.user.email.split("@")[0])}!</h1><p>Seu espaço de estudos está quase pronto.</p></div><span class="status-pill pending">Acesso não liberado</span></div><div class="locked-card"><div class="lock-icon">🔐</div><h2>Desbloqueie sua área de estudos</h2><p>Adquira o Intensivo de Matemática por R$ 19,90 e tenha acesso vitalício.</p><button class="btn btn-primary" id="member-buy">Comprar acesso</button><p class="hint">Já pagou? A liberação acontece após a confirmação da InfinitePay. Atualize esta página em alguns instantes.</p><button class="text-btn" id="refresh-access">Verificar meu acesso</button></div></main>`);
     document.querySelector("#member-buy").onclick=startCheckout;document.querySelector("#refresh-access").onclick=async()=>{await claimPendingOrder();await renderDashboard();};return;
   }
-  shell(`<main class="member-wrap"><div class="member-top" id="member-top"><div><div class="eyebrow">ÁREA DO ALUNO</div><h1>Vamos estudar, ${escapeHtml(session.user.user_metadata?.full_name||"estudante")}?</h1><p>Escolha um módulo ou pratique com um simulado.</p></div><span class="status-pill active">✓ Acesso vitalício ativo</span></div><div class="member-cards"><button class="member-card" id="open-lessons"><span>📚</span><b>Meus módulos</b><small>Trilha intensiva • 7 dias</small></button><button class="member-card" id="open-quiz"><span>✏️</span><b>Simulados</b><small>Escolha entre simulados e provas anteriores</small></button><button class="member-card" id="open-help"><span>❔</span><b>Dúvidas</b><small>Ajuda, acesso e atendimento</small></button><button class="member-card" id="open-history"><span>📈</span><b>Meu desempenho</b><small>Veja suas tentativas</small></button></div><div id="member-content"></div></main>`);
+  shell(`<main class="member-wrap"><div class="member-top" id="member-top"><div><div class="eyebrow">ÁREA DO ALUNO</div><h1>Vamos estudar, ${escapeHtml(session.user.user_metadata?.full_name||"estudante")}?</h1><p>Escolha um módulo ou pratique com um simulado.</p></div><span class="status-pill active">✓ Acesso vitalício ativo</span></div><div class="student-progress" id="student-progress"></div><div class="member-cards"><button class="member-card" id="open-lessons"><span>📚</span><b>Meus módulos</b><small>Trilha intensiva • 7 dias</small></button><button class="member-card" id="open-quiz"><span>✏️</span><b>Simulados</b><small>Questões e provas anteriores</small></button><button class="member-card" id="open-wrong"><span>🧠</span><b>Caderno de erros</b><small>Revise o que precisa melhorar</small></button><button class="member-card" id="open-formulas"><span>📐</span><b>Fórmulas</b><small>Consulta rápida de matemática</small></button><button class="member-card" id="open-flashcards"><span>🗂️</span><b>Flashcards</b><small>Memorize conceitos importantes</small></button><button class="member-card" id="open-help"><span>❔</span><b>Dúvidas</b><small>Ajuda, acesso e atendimento</small></button><button class="member-card" id="open-history"><span>📈</span><b>Meu desempenho</b><small>Veja suas tentativas</small></button></div><div id="member-content"></div></main>`);
   document.querySelector("#open-lessons").onclick=()=>showLessons();
   document.querySelector("#open-quiz").onclick=()=>showQuiz();
+  document.querySelector("#open-wrong").onclick=showWrongAnswers;
+  document.querySelector("#open-formulas").onclick=showFormulas;
+  document.querySelector("#open-flashcards").onclick=showFlashcards;
   document.querySelector("#open-help").onclick=()=>showMemberHelp();
+  renderStudentProgress();
   document.querySelector("#open-history").onclick=()=>showHistory();
   showLessons();
+}
+
+
+function renderStudentProgress(){
+ const el=document.querySelector("#student-progress");if(!el)return;
+ const d=readStudyData(),done=d.completedDays.length,total=courseDays.length,answered=d.answered.length,percent=Math.round(done/total*100);
+ el.innerHTML=`<div class="progress-summary"><div><span class="eyebrow">SEU PROGRESSO</span><h2>${percent}% da trilha concluída</h2><p>${done} de ${total} dias concluídos • ${answered} questões respondidas • ${d.wrong.length} erros para revisar</p></div><div class="progress-track"><span style="width:${percent}%"></span></div></div>`;
 }
 
 function showMemberHelp() {
@@ -145,12 +191,13 @@ function showLesson(i) {
  target.innerHTML=`<button class="back-link" id="back-lessons">← Voltar aos dias</button><div class="lesson-detail course-day"><div class="eyebrow">INTENSIVO DE 7 DIAS • DIA ${i+1}</div><h2>${escapeHtml(day.title)}</h2><p>${escapeHtml(day.goal)}</p><div class="study-plan"><b>Roteiro de hoje</b><span>${escapeHtml(day.plan)}</span></div><h3>O que você vai aprender</h3><ul class="check-list">${topics}</ul><h3>Aula explicada</h3>${lessons}<h3>Videoaulas gratuitas</h3><div class="resource-list">${videoLinks}</div><h3>Hora de praticar</h3><p>Resolva sem olhar a resposta. Depois confira a explicação e refaça as que errar.</p>${exercises}<div class="example-box"><b>Meta do dia</b><p>${escapeHtml(day.homework)}</p></div><button class="btn btn-primary" id="back-lessons-bottom">Voltar à trilha</button></div>`;
  document.querySelector("#back-lessons").onclick=showLessons;
  document.querySelector("#back-lessons-bottom").onclick=showLessons;
+ target.querySelector("#complete-day").onclick=()=>{markDayComplete(i);renderStudentProgress();alert("Dia marcado como concluído!");};
  target.querySelectorAll("[data-course-answer]").forEach(button=>button.onclick=()=>{
   const [qi,ai]=button.dataset.courseAnswer.split("-").map(Number),q=day.exercises[qi],card=target.querySelector(`[data-exercise="${qi}"]`);
   if(card.dataset.answered)return;
   card.dataset.answered="1";
   card.querySelectorAll("[data-course-answer]").forEach(b=>{const [,option]=b.dataset.courseAnswer.split("-").map(Number);b.disabled=true;if(option===q.answer)b.classList.add("correct");if(option===ai&&ai!==q.answer)b.classList.add("wrong");});
-  card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
+  markAnswered(i,qi,ai,q.answer,q.explanation,q.options);card.querySelector("#course-feedback-"+qi).innerHTML=`<div class="explanation"><b>${ai===q.answer?"Resposta correta!":"Vamos corrigir:"}</b><p>${escapeHtml(q.explanation)}</p></div>`;
  });
 }
 function showQuiz(selectedId = null) {
