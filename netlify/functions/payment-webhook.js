@@ -1,10 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
-import { json, preflight } from "./_http.js";
+import { json, preflight, method, body } from "./_http.js";
 export default async (event) => {
   const pf = preflight(event); if (pf) return pf;
-  if (event.httpMethod !== "POST") return json(405, { error: "Método não permitido." });
+  if (method(event) !== "POST") return json(405, { error: "Método não permitido." });
   try {
-    const payload = JSON.parse(event.body || "{}");
+    const payload = await body(event);
     const orderNsu = payload.order_nsu, transactionNsu = payload.transaction_nsu;
     const invoiceSlug = payload.invoice_slug || payload.slug;
     if (!orderNsu) return json(400, { error: "Pedido sem identificador." });
@@ -21,9 +21,7 @@ export default async (event) => {
     const check = await checked.json().catch(() => ({}));
     if (!checked.ok || check.success !== true || check.paid !== true || Number(check.amount) !== Number(order.amount))
       return json(400, { error: "Pagamento ainda não confirmado." });
-    await admin.from("orders").update({
-      status: "paid", transaction_nsu: transactionNsu, invoice_slug: invoiceSlug, paid_at: new Date().toISOString()
-    }).eq("id", order.id);
+    await admin.from("orders").update({ status: "paid", transaction_nsu: transactionNsu, invoice_slug: invoiceSlug, paid_at: new Date().toISOString() }).eq("id", order.id);
     return json(200, { received: true, paid: true });
   } catch (error) {
     console.error("payment-webhook:", error);
