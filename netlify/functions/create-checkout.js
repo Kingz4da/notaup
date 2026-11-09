@@ -7,15 +7,10 @@ export default async (event) => {
   const pf = preflight(event); if (pf) return pf;
   if (event.httpMethod !== "POST") return json(405, { error: "Método não permitido." });
   try {
-    const { email } = JSON.parse(event.body || "{}");
-    const customerEmail = String(email || "").trim().toLowerCase();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail))
-      return json(400, { error: "Informe um e-mail válido para associar à compra." });
-
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const orderNsu = `NU-${crypto.randomUUID()}`;
     const { error: insertError } = await admin.from("orders").insert({
-      user_id: null, customer_email: customerEmail, order_nsu: orderNsu, amount: PRICE_CENTS, status: "pending"
+      user_id: null, customer_email: null, order_nsu: orderNsu, amount: PRICE_CENTS, status: "pending"
     });
     if (insertError) throw insertError;
 
