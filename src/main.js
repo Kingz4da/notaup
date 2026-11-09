@@ -57,6 +57,19 @@ function renderHome() {
     <section class="section faq" id="duvidas"><div class="section-heading"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de começar</h2></div><details><summary>O acesso é vitalício?</summary><p>Sim. Após a confirmação do pagamento, o acesso ao produto adquirido fica associado à sua conta.</p></details><details><summary>Preciso estudar em horário fixo?</summary><p>Não. Você pode acessar os conteúdos quando quiser, usando celular ou computador.</p></details><details><summary>O material é oficial do ENEM?</summary><p>Não. A NotaUp é uma iniciativa independente de preparação. As atividades autorais são inspiradas no formato de questões do ENEM.</p></details><details><summary>Como recebo o acesso?</summary><p>Você paga primeiro e, após a confirmação, cria sua conta com nome, e-mail e senha.</p></details></section>
   </main>`);
   document.querySelector("#buy")?.addEventListener("click", startCheckout);
+  if (new URLSearchParams(location.search).get("teste") === "1") {
+    const pricing = document.querySelector(".pricing-inner");
+    const testButton = document.createElement("button");
+    testButton.className = "btn btn-light btn-wide";
+    testButton.style.marginTop = "12px";
+    testButton.textContent = "Testar cadastro sem pagar";
+    testButton.onclick = startTestCheckout;
+    pricing?.append(testButton);
+    const note = document.createElement("small");
+    note.className = "fine-print";
+    note.textContent = "Modo de teste restrito; não realiza cobrança.";
+    pricing?.append(note);
+  }
   document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{const el=document.querySelector(a.getAttribute("href"));if(el){e.preventDefault();el.scrollIntoView({behavior:"smooth"});}}));
 }
 
@@ -98,6 +111,20 @@ async function startCheckout() {
     localStorage.setItem("notaup_pending_order",body.orderNsu);
     location.href=body.checkoutUrl;
   }catch(e){alert(e.message);if(button){button.disabled=false;button.innerHTML='Garantir meu acesso <span>→</span>';}}
+}
+
+async function startTestCheckout() {
+  try {
+    const res = await fetch("/api/create-test-order", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.error || "Modo de teste indisponível.");
+    localStorage.setItem("notaup_pending_order", result.orderNsu);
+    localStorage.removeItem("notaup_transaction_nsu");
+    localStorage.removeItem("notaup_invoice_slug");
+    showAuth(true);
+  } catch (error) {
+    alert(error.message);
+  }
 }
 
 async function claimPendingOrder(){
