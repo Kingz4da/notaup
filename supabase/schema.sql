@@ -75,3 +75,9 @@ drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
 after insert on auth.users
 for each row execute procedure public.handle_new_user();
+
+
+-- MIGRAÇÃO DO CHECKOUT SEM CADASTRO PRÉVIO
+-- Execute também no SQL Editor do Supabase se o schema antigo já foi aplicado.
+alter table public.orders alter column user_id drop not null;
+alter table public.orders add column if not exists customer_email text;
