@@ -10,7 +10,7 @@ export default async (event) => {
     const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id,is_test").eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
 
-    const token = header(event, "authorization").replace(/^Bearer\\s+/i, "");
+    const token = header(event, "authorization").replace(/^Bearer\s+/i, "");
     let authenticatedUser = null;
     if (token) {
       const { data: { user }, error: authError } = await admin.auth.getUser(token);
