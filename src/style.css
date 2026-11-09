@@ -17,3 +17,23 @@
 .course-exercise { margin:16px 0; padding:18px; border:1px solid var(--border, #e5e7eb); border-radius:14px; }
 .course-feedback { margin-top:12px; }
 .course-day > h3 { margin-top:28px; }
+
+
+/* Navegação e simulados na área de membros */
+.member-help{max-width:820px;border:1px solid var(--line);border-radius:16px;padding:8px 22px;background:#fff}
+.member-help details{padding:17px 0;border-bottom:1px solid var(--line)}
+.member-help details:last-child{border-bottom:0}
+.member-help summary{font-weight:800;color:var(--navy);cursor:pointer}
+.member-help p,.official-exams>p{color:var(--muted);font-size:13px;line-height:1.7}
+.member-help a{color:var(--blue);font-weight:700}
+.mock-exam-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.mock-exam-card{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:21px;border:1px solid var(--line);border-radius:16px;background:#fff}
+.mock-exam-card h3{font:800 17px/1.35 Manrope;color:var(--navy);margin:0}
+.mock-exam-card p{flex:1;color:var(--muted);font-size:13px;line-height:1.6;margin:0}
+.mock-exam-card .btn{margin-top:8px}
+.official-exams{margin-top:42px;padding:25px;border:1px solid var(--line);border-radius:18px;background:#f8faff}
+.official-exams h2{font:800 23px Manrope;color:var(--navy);margin:10px 0}
+.official-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px}
+.exam-note{font-size:11px!important}
+@media(max-width:800px){.mock-exam-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){.mock-exam-grid,.official-links{grid-template-columns:1fr}.official-exams{padding:18px}.member-help{padding:5px 15px}}
