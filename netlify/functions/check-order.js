@@ -44,13 +44,12 @@ export default async (event) => {
     if (token) {
       const { data: { user }, error: authError } = await admin.auth.getUser(token);
       if (authError || !user) return json(401, { error: "Sessão inválida." });
-      if (String(user.email || "").toLowerCase() !== String(order.customer_email || "").toLowerCase())
-        return json(403, { error: "Use o mesmo e-mail informado no pagamento." });
       if (order.status === "paid") {
         if (order.user_id && order.user_id !== user.id) return json(409, { error: "Pedido já associado a outra conta." });
         if (!order.user_id) {
-          const { error: linkError } = await admin.from("orders").update({ user_id: user.id }).eq("id", order.id).is("user_id", null);
+          const { data: linkedOrder, error: linkError } = await admin.from("orders").update({ user_id: user.id, customer_email: user.email }).eq("id", order.id).is("user_id", null).select("id").maybeSingle();
           if (linkError) throw linkError;
+          if (!linkedOrder) return json(409, { error: "Este pedido já foi associado a outra conta." });
         }
         const { error: enrollmentError } = await admin.from("enrollments").upsert({
           user_id: user.id, product_code: "notaup-matematica-enem", access_type: "lifetime", active: true
