@@ -54,7 +54,7 @@ function renderHome() {
     <section class="section" id="conteudo"><div class="section-heading"><div class="eyebrow">TRILHA DE APRENDIZADO</div><h2>O que você vai estudar</h2><p>Uma trilha organizada para construir a base e avançar nos principais assuntos de matemática cobrados no ENEM.</p></div><div class="module-grid">${modules.map(m=>`<article class="module"><span class="module-num">${m[0]}</span><h3>${m[1]}</h3><p>${m[2]}</p></article>`).join("")}</div></section>
     <section class="split-section" id="como-funciona"><div><div class="eyebrow">SEU ESTUDO, SEU RITMO</div><h2>Aprenda. Resolva. Entenda onde melhorar.</h2><p>Assista às aulas, leia os materiais e teste o que aprendeu com simulados interativos. Seu progresso fica salvo na sua conta.</p><ul class="check-list"><li>Conteúdo dividido por assunto</li><li>Questões de múltipla escolha</li><li>Correção e explicação após responder</li><li>Histórico de tentativas</li></ul></div><div class="progress-card"><div class="progress-head"><span>Minha evolução</span><span class="live-dot">● AO SEU RITMO</span></div><div class="progress-circle"><strong>7</strong><span>dias de foco</span></div><div class="progress-line"><span style="width:72%"></span></div><div class="progress-foot"><span>Estude um pouco todos os dias</span><b>72%</b></div></div></section>
     <section class="pricing" id="comprar"><div class="pricing-inner"><div class="eyebrow">COMECE HOJE</div><h2>Seu próximo passo começa com uma questão.</h2><p>Tenha acesso à trilha de matemática e à área de simulados da NotaUp.</p><div class="price"><small>Pagamento único</small><strong>R$ 19,90</strong><span>Sem mensalidade • Acesso vitalício</span></div><button class="btn btn-yellow btn-wide" id="buy">Garantir meu acesso <span>→</span></button><small class="secure">🔒 Pagamento processado pela InfinitePay</small><p class="fine-print">Acesso liberado após confirmação do pagamento. Material digital independente, sem vínculo oficial com o INEP.</p></div></section>
-    <section class="section faq" id="duvidas"><div class="section-heading"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de começar</h2></div><details><summary>O acesso é vitalício?</summary><p>Sim. Após a confirmação do pagamento, o acesso ao produto adquirido fica associado à sua conta.</p></details><details><summary>Preciso estudar em horário fixo?</summary><p>Não. Você pode acessar os conteúdos quando quiser, usando celular ou computador.</p></details><details><summary>O material é oficial do ENEM?</summary><p>Não. A NotaUp é uma iniciativa independente de preparação. As atividades autorais são inspiradas no formato de questões do ENEM.</p></details><details><summary>Como recebo o acesso?</summary><p>Você paga primeiro e, após a confirmação, cria sua conta usando o mesmo e-mail informado no checkout.</p></details></section>
+    <section class="section faq" id="duvidas"><div class="section-heading"><div class="eyebrow">DÚVIDAS FREQUENTES</div><h2>Antes de começar</h2></div><details><summary>O acesso é vitalício?</summary><p>Sim. Após a confirmação do pagamento, o acesso ao produto adquirido fica associado à sua conta.</p></details><details><summary>Preciso estudar em horário fixo?</summary><p>Não. Você pode acessar os conteúdos quando quiser, usando celular ou computador.</p></details><details><summary>O material é oficial do ENEM?</summary><p>Não. A NotaUp é uma iniciativa independente de preparação. As atividades autorais são inspiradas no formato de questões do ENEM.</p></details><details><summary>Como recebo o acesso?</summary><p>Você paga primeiro e, após a confirmação, cria sua conta com nome, e-mail e senha.</p></details></section>
   </main>`);
   document.querySelector("#buy")?.addEventListener("click", startCheckout);
   document.querySelectorAll('a[href^="#"]').forEach(a=>a.addEventListener("click",e=>{const el=document.querySelector(a.getAttribute("href"));if(el){e.preventDefault();el.scrollIntoView({behavior:"smooth"});}}));
@@ -72,8 +72,6 @@ function showAuth(signupInitially = false) {
   name.style.display=signup?"block":"none";
   name.required=signup;
   if(signup){title.textContent="Crie sua conta";desc.textContent="Finalize seu cadastro para acessar a NotaUp.";submit.textContent="Criar conta";sw.textContent="Já tem conta? Entrar";}
-  const pendingEmail=localStorage.getItem("notaup_pending_email");
-  if(pendingEmail) overlay.querySelector("#auth-email").value=pendingEmail;
   form.onsubmit=async e=>{e.preventDefault();if(!supabase){msg.textContent="Configure as variáveis do Supabase para ativar o login.";return;}
     submit.disabled=true;msg.textContent="Aguarde...";
     const email=overlay.querySelector("#auth-email").value.trim(), password=overlay.querySelector("#auth-password").value;
@@ -93,16 +91,11 @@ async function refreshAccess() {
 
 async function startCheckout() {
   if(!configured){alert("Antes de vender, configure Supabase e as variáveis de ambiente da Netlify.");return;}
-  const email=window.prompt("Qual e-mail você vai usar para criar sua conta depois do pagamento?");
-  if(!email)return;
-  const customerEmail=email.trim().toLowerCase();
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)){alert("Digite um e-mail válido.");return;}
   const button=document.querySelector("#buy");if(button){button.disabled=true;button.textContent="Preparando checkout...";}
   try{
-    const res=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:customerEmail})});
+    const res=await fetch("/api/create-checkout",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({})});
     const body=await res.json();if(!res.ok)throw new Error(body.error||"Não foi possível iniciar o pagamento.");
     localStorage.setItem("notaup_pending_order",body.orderNsu);
-    localStorage.setItem("notaup_pending_email",customerEmail);
     location.href=body.checkoutUrl;
   }catch(e){alert(e.message);if(button){button.disabled=false;button.innerHTML='Garantir meu acesso <span>→</span>';}}
 }
@@ -111,11 +104,11 @@ async function claimPendingOrder(){
   const orderNsu=localStorage.getItem("notaup_pending_order");
   if(!orderNsu||!session||!supabase)return false;
   const {data:{session:current}}=await supabase.auth.getSession();
-  const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({order_nsu:orderNsu,transaction_nsu:params.get("transaction_nsu"),slug:params.get("slug")})});
+  const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${current.access_token}`},body:JSON.stringify({order_nsu:orderNsu,transaction_nsu:localStorage.getItem("notaup_transaction_nsu"),slug:localStorage.getItem("notaup_invoice_slug")})});
   const body=await res.json();
   if(!res.ok){if(body.error)alert(body.error);return false;}
   if(body.status!=="paid"){alert("Ainda estamos aguardando a confirmação do pagamento. Assim que a InfinitePay confirmar, entre novamente para liberar o curso.");return false;}
-  if(body.hasAccess){localStorage.removeItem("notaup_pending_order");localStorage.removeItem("notaup_pending_email");return true;}
+  if(body.hasAccess){localStorage.removeItem("notaup_pending_order");localStorage.removeItem("notaup_transaction_nsu");localStorage.removeItem("notaup_invoice_slug");return true;}
   return false;
 }
 
@@ -200,7 +193,8 @@ async function init(){
    setTimeout(async()=>{
      const res=await fetch("/api/check-order",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({order_nsu:orderNsu})});
      const order=await res.json().catch(()=>({}));
-     if(order.email)localStorage.setItem("notaup_pending_email",order.email);
+     if(params.get("transaction_nsu"))localStorage.setItem("notaup_transaction_nsu",params.get("transaction_nsu"));
+     if(params.get("slug"))localStorage.setItem("notaup_invoice_slug",params.get("slug"));
      if(session){await claimPendingOrder();await renderDashboard();}
      else showAuth(true);
      if(order.status!=="paid")alert("Seu pedido está aguardando a confirmação da InfinitePay. Assim que o pagamento for confirmado, entre com o mesmo e-mail para liberar o curso.");
