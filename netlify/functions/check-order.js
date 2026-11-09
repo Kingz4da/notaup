@@ -7,7 +7,7 @@ export default async (event) => {
     const { order_nsu, transaction_nsu, slug } = await body(event);
     if (!order_nsu || !/^NU-[0-9a-f-]{36}$/i.test(order_nsu)) return json(400, { error: "Pedido inválido." });
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
-    const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id,is_test").eq("order_nsu", order_nsu).maybeSingle();
+    const { data: order, error } = await admin.from("orders").select("id,order_nsu,status,customer_email,amount,paid_at,user_id").eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
 
     const token = header(event, "authorization").replace(/^Bearer\s+/i, "");
@@ -18,20 +18,7 @@ export default async (event) => {
       authenticatedUser = user;
     }
 
-    if (order.is_test === true && order.status === "pending" && authenticatedUser) {
-      const allowedEmail = (process.env.TEST_ALLOWED_EMAIL || "").trim().toLowerCase();
-      if (!allowedEmail || authenticatedUser.email?.toLowerCase() !== allowedEmail) {
-        return json(403, { error: "Este pedido de teste não está autorizado para esta conta." });
-      }
-      const { error: testUpdateError } = await admin.from("orders").update({
-        status: "paid", customer_email: authenticatedUser.email, paid_at: new Date().toISOString()
-      }).eq("id", order.id).eq("status", "pending").eq("is_test", true);
-      if (testUpdateError) throw testUpdateError;
-      order.status = "paid";
-      order.customer_email = authenticatedUser.email;
-    }
-
-    if (order.status === "pending" && transaction_nsu && slug && order.is_test !== true) {
+    if (order.status === "pending" && transaction_nsu && slug) {
       const headers = { "Content-Type": "application/json" };
       if (process.env.INFINITEPAY_API_KEY) headers["X-Api-Key"] = process.env.INFINITEPAY_API_KEY;
       const checked = await fetch("https://api.checkout.infinitepay.io/payment_check", {
