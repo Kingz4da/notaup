@@ -8,9 +8,31 @@ export default async (event) => {
     if (!order_nsu || !/^NU-[0-9a-f-]{36}$/i.test(order_nsu)) return json(400, { error: "Pedido inválido." });
     const admin = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
     const { data: order, error } = await admin.from("orders")
-      .select("order_nsu,status,customer_email,amount,paid_at").eq("order_nsu", order_nsu).maybeSingle();
+      .select("id,order_nsu,status,customer_email,amount,paid_at,user_id")
+      .eq("order_nsu", order_nsu).maybeSingle();
     if (error || !order) return json(404, { error: "Pedido não encontrado." });
-    return json(200, { status: order.status, paid: order.status === "paid", email: order.customer_email, paidAt: order.paid_at });
+
+    const token = (event.headers.authorization || "").replace(/^Bearer\\s+/i, "");
+    let hasAccess = false;
+    if (token) {
+      const { data: { user }, error: authError } = await admin.auth.getUser(token);
+      if (authError || !user) return json(401, { error: "Sessão inválida." });
+      if (String(user.email || "").toLowerCase() !== String(order.customer_email || "").toLowerCase())
+        return json(403, { error: "Use o mesmo e-mail informado no pagamento." });
+      if (order.status === "paid") {
+        if (order.user_id && order.user_id !== user.id) return json(409, { error: "Pedido já associado a outra conta." });
+        if (!order.user_id) {
+          const { error: linkError } = await admin.from("orders").update({ user_id: user.id }).eq("id", order.id).is("user_id", null);
+          if (linkError) throw linkError;
+        }
+        const { error: enrollmentError } = await admin.from("enrollments").upsert({
+          user_id: user.id, product_code: "notaup-matematica-enem", access_type: "lifetime", active: true
+        }, { onConflict: "user_id" });
+        if (enrollmentError) throw enrollmentError;
+        hasAccess = true;
+      }
+    }
+    return json(200, { status: order.status, paid: order.status === "paid", hasAccess, email: order.customer_email, paidAt: order.paid_at });
   } catch (error) {
     console.error("check-order:", error);
     return json(500, { error: "Não foi possível consultar o pedido." });
